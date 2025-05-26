@@ -315,7 +315,7 @@ U = normalise_matrix(create_rating_vector(book_lib))
 
 # repeatedly calculate the ranks using a modified version of the PageRank
 # formula
-for _ in range(1000):
+for _ in range(10000):
     R = (LINK_WEIGHT * S @ R) + (PREFERENCES_WEIGHT * T) + (RATINGS_WEIGHT * U)
 
 ranks = {}
