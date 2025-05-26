@@ -6,7 +6,7 @@ PREFERENCES_WEIGHT = 0.1
 RATINGS_WEIGHT = 1 - (LINK_WEIGHT + PREFERENCES_WEIGHT)
 
 # user preferences
-PREFERENCES = ["Engineering"]
+PREFERENCES = ["Engineering", "Physics", "Problem Solving"]
 
 
 class Book():
