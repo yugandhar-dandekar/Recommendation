@@ -1,236 +1,337 @@
 import numpy as np
 
+# weights for PageRank
 LINK_WEIGHT = 0.85
 PREFERENCES_WEIGHT = 0.1
 RATINGS_WEIGHT = 1 - (LINK_WEIGHT + PREFERENCES_WEIGHT)
 
+# user preferences
 PREFERENCES = ["Engineering"]
 
 
-# library of books to be used for the recommendation system
-library = [
-    {
-        "title": "Advanced Problems in Mathematics",
-        "authors": ["Stephen Siklos"],
-        "tags": ["Maths", "Problem Solving", "Oxbridge"],
-        "avg_rating": 5,
-    },
-    {
-        "title": "Stanford Mathematics Problem Book",
-        "authors": ["George Polya", "Jeremy Kilpatrick"],
-        "tags": ["Maths", "Problem Solving", "Oxbridge", "Interviews"],
-        "avg_rating": 4,
-    },
-    {
-        "title": "Professor Povey's Perplexing Problems",
-        "authors": ["Thomas Povey"],
-        "tags": ["Problem Solving", "Physics", "Engineering", "Interviews"],
-        "avg_rating": 4,
-    },
-    {
-        "title": "Fifty Challenging Problems in Probability",
-        "authors": ["Frederick Mosteller"],
-        "tags": ["Maths", "Problem Solving"],
-        "avg_rating": 2,
-    },
-    {
-        "title": "Algorithmic Puzzles",
-        "authors": ["Anany Levitin", "Maria Levitin"],
-        "tags": ["Problem Solving", "Computer Science", "Logic", "Interviews"],
-        "avg_rating": 4,
-    },
-    {
-        "title": "How To Solve It",
-        "authors": ["George Polya"],
-        "tags": ["Maths", "Problem Solving", "Textbook"],
-        "avg_rating": 3,
-    },
-    {
-        "title": "How To Solve It by Computer",
-        "authors": ["Dromey"],
-        "tags": ["Computer Science", "Logic", "Textbook"],
-        "avg_rating": 3,
-    },
-    {
-        "title": "Fermat's Last Theorem",
-        "authors": ["Simon Singh"],
-        "tags": ["Maths", "History of Maths", "Biography"],
-        "avg_rating": 4.5,
-    },
-    {
-        "title": "The Code Book",
-        "authors": ["Simon Singh"],
-        "tags": ["Maths", "History of Maths", "Computer Science"],
-        "avg_rating": 4,
-    },
-    {
-        "title": "The Great Mathematical Problems",
-        "authors": ["Ian Stewart"],
-        "tags": ["Maths", "History of Maths", "Problem Solving"],
-        "avg_rating": 4,
-    },
-    {
-        "title": "My Best Mathematical and Logic Puzzles",
-        "authors": ["Martin Gardner"],
-        "tags": ["Maths", "Logic", "Problem Solving"],
-        "avg_rating": 3,
-    },
-    {
-        "title": "How to Think Like a Mathematician",
-        "authors": ["Kevin Houston"],
-        "tags": ["Maths", "Textbook", "Interviews"],
-        "avg_rating": 4.5,
-    },
+class Book():
+    """
+    Represents a book in a library
+    """
+    def __init__(self, title: str, authors: list[str], tags: list[str],
+                 average_rating: float, id: int):
+        self.title = title
+        self.authors = authors
+        self.tags = tags
+        self.average_rating = average_rating
+        self.id = id
+
+
+# book library data set
+book_lib = [
+    Book(
+        title="Advanced Problems in Mathematics",
+        authors=["Stephen Siklos"],
+        tags=["Maths", "Problem Solving", "Oxbridge"],
+        average_rating=5,
+        id=1
+    ),
+    Book(
+        title="Stanford Mathematics Problem Book",
+        authors=["George Polya", "Jeremy Kilpatrick"],
+        tags=["Maths", "Problem Solving", "Oxbridge", "Interviews"],
+        average_rating=4,
+        id=2
+    ),
+    Book(
+        title="Professor Povey's Perplexing Problems",
+        authors=["Thomas Povey"],
+        tags=["Problem Solving", "Physics", "Engineering", "Interviews"],
+        average_rating=4,
+        id=3
+    ),
+    Book(
+        title="Fifty Challenging Problems in Probability",
+        authors=["Frederick Mosteller"],
+        tags=["Maths", "Problem Solving"],
+        average_rating=2,
+        id=4
+    ),
+    Book(
+        title="Algorithmic Puzzles",
+        authors=["Anany Levitin", "Maria Levitin"],
+        tags=["Problem Solving", "Computer Science", "Logic", "Interviews"],
+        average_rating=4,
+        id=5
+    ),
+    Book(
+        title="How To Solve It",
+        authors=["George Polya"],
+        tags=["Maths", "Problem Solving", "Textbook"],
+        average_rating=3,
+        id=6
+    ),
+    Book(
+        title="How To Solve It by Computer",
+        authors=["Dromey"],
+        tags=["Computer Science", "Logic", "Textbook"],
+        average_rating=3,
+        id=7
+    ),
+    Book(
+        title="Fermat's Last Theorem",
+        authors=["Simon Singh"],
+        tags=["Maths", "History of Maths", "Biography"],
+        average_rating=4.5,
+        id=8
+    ),
+    Book(
+        title="The Code Book",
+        authors=["Simon Singh"],
+        tags=["Maths", "History of Maths", "Computer Science"],
+        average_rating=4,
+        id=9
+    ),
+    Book(
+        title="The Great Mathematical Problems",
+        authors=["Ian Stewart"],
+        tags=["Maths", "History of Maths", "Problem Solving"],
+        average_rating=4,
+        id=10
+    ),
+    Book(
+        title="My Best Mathematical and Logic Puzzles",
+        authors=["Martin Gardner"],
+        tags=["Maths", "Logic", "Problem Solving"],
+        average_rating=3,
+        id=11
+    ),
+    Book(
+        title="How to Think Like a Mathematician",
+        authors=["Kevin Houston"],
+        tags=["Maths", "Textbook", "Interviews"],
+        average_rating=4.5,
+        id=12
+    ),
 ]
 
+lib_size = len(book_lib)
 
-# normalising a matrix by dividing each column by its column sun
-# column sums that are 0 are replace with 1/rows so that eeach column sums to 1
-def normalise_matrix(matrix):
-    # get the dimensions of the matrix
-    columns = matrix.shape[1]
-    rows = matrix.shape[0]
 
-    # for each column in the matrix
-    for col in range(columns):
-        # extract the column
-        matrix_column = matrix[:, col]
+def get_common_elements(list1: list, list2: list) -> list:
+    """gets the the common elements between two lists
 
-        # calculate the sum of the given column
-        column_sum = matrix_column.sum()
+    Args:
+        list1 (list): first list
+        list2 (list): second list
 
-        # check if the sum is or is not 0
-        if column_sum != 0:
-            # in this case where there is at least one non-zero element,
-            # every element is divided by the sum of the column
-            matrix[:, col] = matrix_column / column_sum
-        else:
-            # in this case where all ements are 0, ever element is replaced
-            # with 1/rows so that the column sums to 1
-            matrix[:, col] = 1 / rows
+    Returns:
+        list: list of common elements
+    """
+
+    # find the intersection of the two sets
+    common_elements = set(list1) & set(list2)
+
+    return list(common_elements)
+
+
+def count_common_elements(list1: list, list2: list) -> int:
+    """counts the number of common elements between two lists
+
+    Args:
+        list1 (list): first list
+        list2 (list): second list
+
+    Returns:
+        int: number of common elements
+    """
+    return len(get_common_elements(list1, list2))
+
+
+def get_common_authors(book1: Book, book2: Book) -> list:
+    """gets the common authors between two books
+
+    Args:
+        book1 (Book): first book
+        book2 (Book): second book
+
+    Returns:
+        list: common authors
+    """
+    return get_common_elements(book1.authors, book2.authors)
+
+
+def get_common_tags(book1: Book, book2: Book) -> list:
+    """gets the common tags between two books
+
+    Args:
+        book1 (Book): first book
+        book2 (Book): second book
+
+    Returns:
+        list: common tags
+    """
+    return get_common_elements(book1.tags, book2.tags)
+
+
+def count_common_authors(book1: Book, book2: Book) -> int:
+    """counts the number of common authors between two books
+
+    Args:
+        book1 (Book): first book
+        book2 (Book): second book
+
+    Returns:
+        int: number of common authors
+    """
+    return len(get_common_authors(book1, book2))
+
+
+def count_common_tags(book1: Book, book2: Book) -> int:
+    """counts the number of common tags between two books
+
+    Args:
+        book1 (Book): first book
+        book2 (Book): second book
+
+    Returns:
+        int: number of common tags
+    """
+    return len(get_common_tags(book1, book2))
+
+
+def calculate_link_strength(book1: Book, book2: Book) -> int:
+    """calculates the link strength between two books based on common authors
+    and tags, each common tag adds 1 to the link strength, each common author
+    adds 2 to the link strength
+
+    Args:
+        book1 (Book): first book
+        book2 (Book): second book
+
+    Returns:
+        int: link strength between the two books
+    """
+
+    common_authors = count_common_authors(book1, book2)
+    common_tags = count_common_tags(book1, book2)
+
+    return (2 * common_authors) + common_tags
+
+
+def create_link_matrix(library: list[Book]) -> np.ndarray:
+    """creates a matrix which shows the link strength between all books
+
+    Args:
+        library (list[Book]): book library
+
+    Returns:
+        np.ndarray: link strength of all books
+    """
+
+    # create a null matrix
+    matrix = np.zeros((lib_size, lib_size))
+
+    # iterate through each book in the library where the column is greater
+    # than the row which means it is a triangular matrix but then reflect it
+    # across the diagonal to make it symmetric
+    for i in range(lib_size):
+        for j in range(lib_size):
+            if j > i:
+                # gets the link strength
+                link_strength = calculate_link_strength(library[i], library[j])
+
+                # apply it to 1 half of the matrix and its reflected half
+                matrix[i][j] = link_strength
+                matrix[j][i] = link_strength
 
     return matrix
 
 
-# gets the common authors between two books
-def get_common_authors(book1_index, book2_index, booklist):
-    # extract the authors of the two books
-    authors1 = booklist[book1_index]["authors"]
-    authors2 = booklist[book2_index]["authors"]
+def create_preferences_vector(library: list[Book],
+                              preferences: list[str]) -> np.ndarray:
+    """creates a vector which shows the number of common preferences for each
+    book
 
-    # find the intersection of the authors
-    common_authors = list(set(authors1).intersection(set(authors2)))
+    Args:
+        library (list[Book]): book library
+        preferences (list[str]): preferences
 
-    return common_authors
+    Returns:
+        np.ndarray: vector of common preferences for each book
+    """
+    # creates a null vector
+    preferences_vector = np.zeros((lib_size, 1))
 
+    # iterate through every book in the library
+    for i, book in enumerate(library):
+        num_common_preferences = count_common_elements(book.tags, preferences)
+        num_common_authors = count_common_elements(book.authors, preferences)
 
-# gets common tags between 2 books
-def get_common_tags(book1_index, book2_index, booklist):
-    # extract the common tags
-    authors1 = booklist[book1_index]["tags"]
-    authors2 = booklist[book2_index]["tags"]
+        # each common tag adds 1 to the preferences vector, each common author
+        # adds 2 to the preferences vector
+        preferences_vector[i] = num_common_preferences + 2 * num_common_authors
 
-    # find the intersection of the tags
-    common_authors = list(set(authors1).intersection(set(authors2)))
-
-    return common_authors
-
-
-# gets the strength of the link between two books
-def get_link_strength(book1_index, book2_index, booklist):
-    # extract the authors and tags of the two books
-    common_authors = get_common_authors(book1_index, book2_index, booklist)
-    common_tags = get_common_tags(book1_index, book2_index, booklist)
-
-    # calculate the link strength, each common tag is +1 to the strength,
-    # each common author is +2 to the strength
-    link_strength = len(common_authors) * 2 + len(common_tags)
-
-    return link_strength
+    return preferences_vector
 
 
-# gets a matrix of links between all books
-def get_link_matrix(booklist, normalise=True):
-    # create a null matrix
-    matrix = np.zeros((len(booklist), len(booklist)), dtype=float)
+def create_rating_vector(library: list[Book]) -> np.ndarray:
+    """creates a vector which shows the average rating of each book
 
-    # iterate through each row and column of the matrix
-    for row in range(len(booklist)):
-        for col in range(len(booklist)):
-            # ensures that the column is greated that the row to reduce the
-            # number of strngth calculations as the matrix can be reflected
-            # diagonally to become symmetric, it does not matter wether col >
-            # row or row > col
-            if col > row:
-                strength = get_link_strength(row, col, booklist)
+    Args:
+        library (list[Book]): book library
 
-                # reflect the matrix diagonally
-                matrix[row][col] = strength
-                matrix[col][row] = strength
+    Returns:
+        np.ndarray: vector of average ratings for each book
+    """
+    # creates a null vector
+    ratings_vector = np.zeros((lib_size, 1))
 
-    return normalise_matrix(matrix) if normalise else matrix
+    # iterate through every book in the library
+    for i, book in enumerate(library):
+        ratings_vector[i] = book.average_rating
+
+    return ratings_vector
 
 
-# gets a vector of tags for each book
-def get_tag_vector(booklist, tags, normalise=True):
-    # create a null matrix
-    matrix = np.zeros((len(booklist), 1), dtype=float)
+def normalise_matrix(matrix: np.ndarray) -> np.ndarray:
+    """normalises a 2d matrix by dividing each element by the column sum, if
+    the column sum is 0, each element is made such that the sum is 1
 
-    # iterate through each row of the matrix
-    for i, book in enumerate(booklist):
-        authors_and_tags = book["tags"] + book["authors"]
+    Args:
+        matrix (np.ndarray): matrix to normalise
 
-        # find the intersection of the authors and tags between the 2 books
-        common_items = set(authors_and_tags).intersection(set(tags))
+    Returns:
+        np.ndarray: normalised matrix
+    """
+    row_sums = matrix.sum(axis=0, keepdims=True)
 
-        matrix[i][0] = len(common_items)
+    row_sums[row_sums == 0] = 1
 
-    return normalise_matrix(matrix) if normalise else matrix
-
-
-# gets a vector of ratings for each book
-def get_rating_vector(booklist, normalise=True):
-    # create a null matrix
-    matrix = np.zeros((len(booklist), 1), dtype=float)
-
-    # iterate through each row of the matrix
-    for i, book in enumerate(booklist):
-        matrix[i][0] = book["avg_rating"]
-
-    return normalise_matrix(matrix) if normalise else matrix
+    return matrix / row_sums
 
 
-def main():
-    # generate the 3 matrices that will be used to calculate the rank
-    link_matrix = get_link_matrix(library)
-    tag_matrix = get_tag_vector(library, PREFERENCES)
-    rating_matrix = get_rating_vector(library)
+# create a null vector to store the ranks of each book
+R = np.zeros((lib_size, 1))
 
-    # unordered ranks of books, the index corresponds to the book in the
-    # library
-    rank_vector = np.ones((len(library), 1)) / len(library)
+S = normalise_matrix(create_link_matrix(book_lib))
+T = normalise_matrix(create_preferences_vector(book_lib, PREFERENCES))
+U = normalise_matrix(create_rating_vector(book_lib))
 
-    # iteratively updates the rating vector based on the 3 matrices
-    for _ in range(10000):
-        rank_vector = (
-            LINK_WEIGHT * link_matrix @ rank_vector
-            + PREFERENCES_WEIGHT * tag_matrix
-            + RATINGS_WEIGHT * rating_matrix
-        )
+# repeatedly calculate the ranks using a modified version of the PageRank
+# formula
+for _ in range(1000):
+    R = (LINK_WEIGHT * S @ R) + (PREFERENCES_WEIGHT * T) + (RATINGS_WEIGHT * U)
 
-    ranks = {}
+ranks = {}
 
-    # creates a dictionary of book titles and their corresponding ranks
-    for i, element in enumerate(rank_vector):
-        ranks[library[i]["title"]] = element[0]
+# create a dictionary of book titles to theur respective ranks
+for i, element in enumerate(R):
+    ranks[book_lib[i].title] = element[0]
 
-    # sorts the dictionary by value in descending order
-    ranks = dict(sorted(ranks.items(), key=lambda item: item[1], reverse=True))
+# sort the ranks descencind
+ranks = dict(
+    sorted(ranks.items(),
+           key=lambda item: item[1],
+           reverse=True
+           )
+    )
 
-    # prints the ranks of the books
-    for i in ranks:
-        print(f"{i}: {ranks[i]}")
-
-
-if __name__ == "__main__":
-    main()
+# output the ranks
+for i in ranks:
+    print(f"{i}: {ranks[i]}")
