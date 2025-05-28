@@ -309,6 +309,7 @@ def normalise_matrix(matrix: np.ndarray) -> np.ndarray:
 # create a null vector to store the ranks of each book
 R = np.zeros((lib_size, 1))
 
+# create 3 matrices for the link strength, preferences and ratings
 S = normalise_matrix(create_link_matrix(book_lib))
 T = normalise_matrix(create_preferences_vector(book_lib, PREFERENCES))
 U = normalise_matrix(create_rating_vector(book_lib))
@@ -320,11 +321,11 @@ for _ in range(10000):
 
 ranks = {}
 
-# create a dictionary of book titles to theur respective ranks
+# create a dictionary of book titles to their respective ranks
 for i, element in enumerate(R):
     ranks[book_lib[i].title] = element[0]
 
-# sort the ranks descencind
+# sort the ranks descending
 ranks = dict(
     sorted(ranks.items(),
            key=lambda item: item[1],
