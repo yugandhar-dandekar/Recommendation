@@ -8,6 +8,9 @@ RATINGS_WEIGHT = 1 - (LINK_WEIGHT + PREFERENCES_WEIGHT)
 # user preferences
 PREFERENCES = ["Engineering", "Physics", "Problem Solving"]
 
+# How many iterations of PageRank will be run
+PAGERANK_ITERATIONS = 10_000
+
 
 class Book():
     """
@@ -316,7 +319,7 @@ U = normalise_matrix(create_rating_vector(book_lib))
 
 # repeatedly calculate the ranks using a modified version of the PageRank
 # formula
-for _ in range(10000):
+for _ in range(PAGERANK_ITERATIONS):
     R = (LINK_WEIGHT * S @ R) + (PREFERENCES_WEIGHT * T) + (RATINGS_WEIGHT * U)
 
 ranks = {}
