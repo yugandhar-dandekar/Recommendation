@@ -272,7 +272,7 @@ class RecommendationAlgorithm():
 if __name__ == "__main__":
     books = []
 
-    # load the library from a JSON file
+    # load the library from a JSON file in the same directory as this file
     with open(path.join(path.dirname(__file__), "library.json"), "r") as file:
         data = json.load(file)
 
@@ -286,6 +286,7 @@ if __name__ == "__main__":
                     book_id=book["book_id"]
                     )
                 )
+
     # instantiate the recommendation algorithm with the library and preferences
     alg = RecommendationAlgorithm(
         library=books,
